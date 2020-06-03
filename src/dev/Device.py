@@ -82,6 +82,7 @@ class DmaDevice(PioDevice):
     type = 'DmaDevice'
     cxx_header = "dev/dma_device.hh"
     abstract = True
+    flag = Param.Int(0, "Need to display DMA accesses? (should probably get replaced by a gem5 DebugFlag")
     dma = MasterPort("DMA port")
 
     _iommu = None

@@ -41,7 +41,7 @@ import m5
 from m5.objects import Cache
 
 # Add the common scripts to our path
-m5.util.addToPath('../../')
+m5.util.addToPath('/root/gem5/configs/')
 
 from common import SimpleOpts
 

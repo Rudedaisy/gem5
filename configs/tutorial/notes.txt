@@ -1,0 +1,3 @@
+1 - FS mode for 1 node works. Need to test mini-dnn in one node too
+2 - System has a PCI address mapped. Maybe merge the PCI address to another CPU's memory space?
+  - There is a small PCI cache managing coherence... try implementing a directory?

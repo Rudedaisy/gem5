@@ -175,7 +175,7 @@ union PCIConfig {
 #define PMCAP_PMCS 0x04                 // Power Management/Ctrl Stat  rw
 #define PMCAP_SIZE 0x06
 
-#define MSICAP_ID 0x00
+#define MSICAP_ID 0x00                  // Capability ID               ro
 #define MSICAP_MC 0x02                  // Message Control             rw
 #define MSICAP_MA 0x04                  // Message Address             rw
 #define MSICAP_MUA 0x08                 // Message Upper Address       rw
@@ -184,13 +184,13 @@ union PCIConfig {
 #define MSICAP_MPEND 0x14               // ??                          rw
 #define MSICAP_SIZE 0x18
 
-#define MSIXCAP_ID 0x00
+#define MSIXCAP_ID 0x00                 // Capability ID               ro
 #define MSIXCAP_MXC 0x02                // Message Control             rw
 #define MSIXCAP_MTAB 0x04               // Table Offset                rw
 #define MSIXCAP_MPBA 0x08               // PBA Offset                  rw
 #define MSIXCAP_SIZE 0x0C
 
-#define PXCAP_ID 0x00
+#define PXCAP_ID 0x00                   // Capability ID               ro
 #define PXCAP_PXCAP 0x02                // PCIe Capability             ro
 #define PXCAP_PXDCAP 0x04               // Device CAP                  ro
 #define PXCAP_PXDC 0x08                 // Device Control              rw

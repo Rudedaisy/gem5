@@ -33,9 +33,15 @@
  */
 #include "base/bitfield.hh"
 
-namespace iGbReg {
+namespace iGbReg_pcie {
+
 
 // Registers used by the Intel GbE NIC
+// List registers specific to i82574 model first
+const uint32_t SYSTIML      = 0x0B600;
+const uint32_t SYSTIMH      = 0x0B604;
+const uint32_t TIMINCA      = 0x0B608;
+const uint32_t EXTCNF_CTRL  = 0x00F00;
 const uint32_t REG_CTRL     = 0x00000;
 const uint32_t REG_STATUS   = 0x00008;
 const uint32_t REG_EECD     = 0x00010;
@@ -91,7 +97,7 @@ const uint32_t REG_MTA      = 0x05200;
 const uint32_t REG_RAL      = 0x05400;
 const uint32_t REG_RAH      = 0x05404;
 const uint32_t REG_VFTA     = 0x05600;
-
+const uint32_t REG_SYSTIML  = 0x0B600 ; 
 const uint32_t REG_WUC      = 0x05800;
 const uint32_t REG_WUFC     = 0x05808;
 const uint32_t REG_WUS      = 0x05810;
@@ -313,6 +319,14 @@ struct Regs : public Serializable {
             UNSERIALIZE_SCALAR(_data);
         }
     };
+    // PCIe register variables
+    uint32_t extcnf_ctrl ; 
+    uint32_t fcal ; 
+    uint32_t fcah ; 
+    uint32_t fct ; 
+    uint32_t ral ; // To store the MAC Address
+    uint32_t rah ;
+    uint32_t systiml , systimh, timinca ;  
 
     struct CTRL : public Reg<uint32_t> { // 0x0000 CTRL Register
         using Reg<uint32_t>::operator=;

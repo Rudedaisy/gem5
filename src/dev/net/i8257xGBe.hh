@@ -32,13 +32,11 @@
  * Device model for Intel's 8254x line of gigabit ethernet controllers.
  */
 
-#ifndef __DEV_NET_I8254XGBE_HH__
-#define __DEV_NET_I8254XGBE_HH__
+#ifndef __DEV_NET_I8257XGBE_HH__
+#define __DEV_NET_I8257XGBE_HH__
 
 #include <deque>
 #include <string>
-
-#include "dev/pci/pcireg.h"
 
 #include "base/cp_annotate.hh"
 #include "base/inet.hh"
@@ -47,27 +45,27 @@
 #include "dev/net/etherdevice.hh"
 #include "dev/net/etherint.hh"
 #include "dev/net/etherpkt.hh"
-#include "dev/net/i8254xGBe_defs.hh"
+#include "dev/net/i8257xGBe_defs.hh"
 #include "dev/net/pktfifo.hh"
 #include "dev/pci/device.hh"
-#include "params/IGbE.hh"
+#include "params/IGbE_pcie.hh"
 #include "sim/eventq.hh"
 
-class IGbEInt;
+class IGbEInt_pcie;
 
-class IGbE : public EtherDevice
+class IGbE_pcie : public EtherDevice
 {
   private:
-    IGbEInt *etherInt;
+    IGbEInt_pcie *etherInt;
     CPA *cpa;
 
     // device registers
-    iGbReg::Regs regs;
+    iGbReg_pcie::Regs regs;
 
     // eeprom data, status and control bits
     int eeOpBits, eeAddrBits, eeDataBits;
     uint8_t eeOpcode, eeAddr;
-    uint16_t flash[iGbReg::EEPROM_SIZE];
+    uint16_t flash[iGbReg_pcie::EEPROM_SIZE];
 
     // packet fifos
     PacketFifo rxFifo;
@@ -97,7 +95,7 @@ class IGbE : public EtherDevice
         rxDescCache.writeback(0);
         DPRINTF(EthernetIntr,
                 "Posting RXT interrupt because RDTR timer expired\n");
-        postInterrupt(iGbReg::IT_RXT);
+        postInterrupt(iGbReg_pcie::IT_RXT);
     }
 
     EventFunctionWrapper rdtrEvent;
@@ -107,7 +105,7 @@ class IGbE : public EtherDevice
         rxDescCache.writeback(0);
         DPRINTF(EthernetIntr,
                 "Posting RXT interrupt because RADV timer expired\n");
-        postInterrupt(iGbReg::IT_RXT);
+        postInterrupt(iGbReg_pcie::IT_RXT);
     }
 
     EventFunctionWrapper radvEvent;
@@ -117,7 +115,7 @@ class IGbE : public EtherDevice
         txDescCache.writeback(0);
         DPRINTF(EthernetIntr,
                 "Posting TXDW interrupt because TADV timer expired\n");
-        postInterrupt(iGbReg::IT_TXDW);
+        postInterrupt(iGbReg_pcie::IT_TXDW);
     }
 
     EventFunctionWrapper tadvEvent;
@@ -127,7 +125,7 @@ class IGbE : public EtherDevice
         txDescCache.writeback(0);
         DPRINTF(EthernetIntr,
                 "Posting TXDW interrupt because TIDV timer expired\n");
-        postInterrupt(iGbReg::IT_TXDW);
+        postInterrupt(iGbReg_pcie::IT_TXDW);
     }
     EventFunctionWrapper tidvEvent;
 
@@ -147,7 +145,7 @@ class IGbE : public EtherDevice
      * @param t the type of interrupt we are posting
      * @param now should we ignore the interrupt limiting timer
      */
-    void postInterrupt(iGbReg::IntTypes t, bool now = false);
+    void postInterrupt(iGbReg_pcie::IntTypes t, bool now = false);
 
     /** Check and see if changes to the mask register have caused an interrupt
      * to need to be sent or perhaps removed an interrupt cause.
@@ -233,7 +231,7 @@ class IGbE : public EtherDevice
         T *wbBuf;
 
         // Pointer to the device we cache for
-        IGbE *igbe;
+        IGbE_pcie *igbe;
 
         // Name of this  descriptor cache
         std::string _name;
@@ -268,7 +266,7 @@ class IGbE : public EtherDevice
         std::string annSmFetch, annSmWb, annUnusedDescQ, annUsedCacheQ,
             annUsedDescQ, annUnusedCacheQ, annDescQ;
 
-        DescCache(IGbE *i, const std::string n, int s);
+        DescCache(IGbE_pcie *i, const std::string n, int s);
         virtual ~DescCache();
 
         std::string name() { return _name; }
@@ -337,7 +335,7 @@ class IGbE : public EtherDevice
     };
 
 
-    class RxDescCache : public DescCache<iGbReg::RxDesc>
+    class RxDescCache : public DescCache<iGbReg_pcie::RxDesc>
     {
       protected:
         Addr descBase() const override { return igbe->regs.rdba(); }
@@ -361,7 +359,7 @@ class IGbE : public EtherDevice
         unsigned bytesCopied;
 
       public:
-        RxDescCache(IGbE *i, std::string n, int s);
+        RxDescCache(IGbE_pcie *i, std::string n, int s);
 
         /** Write the given packet into the buffer(s) pointed to by the
          * descriptor and update the book keeping. Should only be called when
@@ -398,7 +396,7 @@ class IGbE : public EtherDevice
 
     RxDescCache rxDescCache;
 
-    class TxDescCache  : public DescCache<iGbReg::TxDesc>
+    class TxDescCache  : public DescCache<iGbReg_pcie::TxDesc>
     {
       protected:
         Addr descBase() const override { return igbe->regs.tdba(); }
@@ -440,7 +438,7 @@ class IGbE : public EtherDevice
         int tsoPkts;
 
       public:
-        TxDescCache(IGbE *i, std::string n, int s);
+        TxDescCache(IGbE_pcie *i, std::string n, int s);
 
         /** Tell the cache to DMA a packet from main memory into its buffer and
          * return the size the of the packet to reserve space in tx fifo.
@@ -456,7 +454,7 @@ class IGbE : public EtherDevice
         unsigned
         descInBlock(unsigned num_desc)
         {
-            return num_desc / igbe->cacheBlockSize() / sizeof(iGbReg::TxDesc);
+            return num_desc / igbe->cacheBlockSize() / sizeof(iGbReg_pcie::TxDesc);
         }
 
         /** Ask if the packet has been transfered so the state machine can give
@@ -511,18 +509,17 @@ class IGbE : public EtherDevice
     TxDescCache txDescCache;
 
   public:
-    typedef IGbEParams Params;
+    typedef IGbE_pcieParams Params;
     const Params *
     params() const {
         return dynamic_cast<const Params *>(_params);
     }
 
-    IGbE(const Params *params);
-    ~IGbE();
+    IGbE_pcie(const Params *params);
+    ~IGbE_pcie();
     void init() override;
 
-    Port &getPort(const std::string &if_name,
-                  PortID idx=InvalidPortID) override;
+  /*EtherInt * */ Port &getPort(const std::string &if_name, PortID idx=InvalidPortID) override;
 
     Tick lastInterrupt;
 
@@ -542,13 +539,13 @@ class IGbE : public EtherDevice
 
 };
 
-class IGbEInt : public EtherInt
+class IGbEInt_pcie : public EtherInt
 {
   private:
-    IGbE *dev;
+    IGbE_pcie *dev;
 
   public:
-    IGbEInt(const std::string &name, IGbE *d)
+    IGbEInt_pcie(const std::string &name, IGbE_pcie *d)
         : EtherInt(name), dev(d)
     { }
 
@@ -556,4 +553,4 @@ class IGbEInt : public EtherInt
     virtual void sendDone() { dev->ethTxDone(); }
 };
 
-#endif //__DEV_NET_I8254XGBE_HH__
+#endif //__DEV_NET_I8257XGBE_HH__

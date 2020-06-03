@@ -119,7 +119,8 @@ class DmaPort : public MasterPort, public Drainable
 
     /** Id for all requests */
     const MasterID masterId;
-
+    int flag; // used for debugging - should probably get depracated...
+  
   protected:
     /** Use a deque as we never do any insertion or removal in the middle */
     std::deque<PacketPtr> transmitList;
@@ -150,7 +151,7 @@ class DmaPort : public MasterPort, public Drainable
   public:
 
     DmaPort(ClockedObject *dev, System *s,
-            uint32_t sid = 0, uint32_t ssid = 0);
+            uint32_t sid = 0, uint32_t ssid = 0, int _flag = 0);
 
     RequestPtr
     dmaAction(Packet::Command cmd, Addr addr, int size, Event *event,

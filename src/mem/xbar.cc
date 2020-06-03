@@ -418,13 +418,21 @@ BaseXBar::recvRangeChange(PortID master_port_id)
             DPRINTF(AddrRanges, "Adding range %s for id %d\n",
                     r.to_string(), master_port_id);
             if (portMap.insert(r, master_port_id) == portMap.end()) {
-                PortID conflict_id = portMap.intersects(r)->second;
+	      /*PortID conflict_id = portMap.intersects(r)->second;
                 fatal("%s has two ports responding within range "
                       "%s:\n\t%s\n\t%s\n",
                       name(),
                       r.to_string(),
                       masterPorts[master_port_id]->getPeer(),
-                      masterPorts[conflict_id]->getPeer());
+                      masterPorts[conflict_id]->getPeer()); */
+	      for (auto it = portMap.begin() ; it != portMap.end() ; it++) {
+		if(it->first == r) {
+		  portMap.erase(it) ;
+		  break ;
+		}
+	      }
+
+               portMap.insert(r, master_port_id) ;
             }
         }
     }

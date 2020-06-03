@@ -44,7 +44,8 @@
 
 Import('*')
 
-SimObject('Ethernet.py')
+#SimObject('Ethernet.py')
+SimObject('PcieNic.py')
 
 # Basic Ethernet infrastructure
 Source('etherbus.cc')
@@ -79,6 +80,7 @@ DebugFlag('DistEthernetCmd')
 
 # Ethernet controllers
 Source('i8254xGBe.cc')
+Source('i8257xGBe.cc')
 Source('ns_gige.cc')
 Source('sinic.cc')
 

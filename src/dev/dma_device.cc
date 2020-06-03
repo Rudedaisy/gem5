@@ -55,14 +55,14 @@
 #include "sim/system.hh"
 
 DmaPort::DmaPort(ClockedObject *dev, System *s,
-                 uint32_t sid, uint32_t ssid)
+                 uint32_t sid, uint32_t ssid, int _flag)
     : MasterPort(dev->name() + ".dma", dev),
       device(dev), sys(s), masterId(s->getMasterId(dev)),
       sendEvent([this]{ sendDma(); }, dev->name()),
       pendingCount(0), inRetry(false),
       defaultSid(sid),
       defaultSSid(ssid)
-{ }
+{ flag = _flag;}
 
 void
 DmaPort::handleResp(PacketPtr pkt, Tick delay)
@@ -92,6 +92,12 @@ DmaPort::handleResp(PacketPtr pkt, Tick delay)
     // if we have reached the total number of bytes for this DMA
     // request, then signal the completion and delete the sate
     if (state->totBytes == state->numBytes) {
+      /*if (this->flag) {
+	  float time_taken = curTick() - state->start_tick;
+	  time_taken = time_taken/1000;
+	  time_taken= (time_taken != 0)?((float)state->totBytes/time_taken)*1000 : 0;
+	  printf("Bandwidth for %lu bytes, delay:%lu, is %f,%lu\n" , state->totBytes,state->delay,time_taken,curTick());
+	  }*/
         if (state->completionEvent) {
             delay += state->delay;
             device->schedule(state->completionEvent, curTick() + delay);
@@ -120,7 +126,7 @@ DmaPort::recvTimingResp(PacketPtr pkt)
 }
 
 DmaDevice::DmaDevice(const Params *p)
-    : PioDevice(p), dmaPort(this, sys, p->sid, p->ssid)
+  : PioDevice(p), dmaPort(this, sys, p->sid, p->ssid, p->flag)
 { }
 
 void
@@ -154,6 +160,12 @@ DmaPort::dmaAction(Packet::Command cmd, Addr addr, int size, Event *event,
                    uint8_t *data, uint32_t sid, uint32_t ssid, Tick delay,
                    Request::Flags flag)
 {
+    if (this->flag == 1) {
+      printf("size of DMA transfer is %d, count:%u,%lu\n",size,(unsigned int)pendingCount,curTick());
+      //drain_size = size;
+      //drain_time = curTick();
+    }
+  
     // one DMA request sender state for every action, that is then
     // split into many requests and packets based on the block size,
     // i.e. cache line size
@@ -214,6 +226,9 @@ DmaPort::queueDma(PacketPtr pkt)
     // remember that we have another packet pending, this will only be
     // decremented once a response comes back
     pendingCount++;
+    if (this->flag==1) {
+      printf("Pending count is %u\n",(uint32_t)pendingCount);
+    }
 }
 
 void
